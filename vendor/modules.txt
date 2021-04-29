@@ -1,0 +1,33 @@
+# github.com/alecthomas/assert v0.0.0-20170929043011-405dbfeb8e38
+## explicit
+github.com/alecthomas/assert
+# github.com/alecthomas/colour v0.1.0
+## explicit
+github.com/alecthomas/colour
+# github.com/alecthomas/kong v0.2.15
+## explicit
+github.com/alecthomas/kong
+# github.com/alecthomas/repr v0.0.0-20210301060118-828286944d6a
+## explicit
+github.com/alecthomas/repr
+# github.com/fatih/color v1.10.0
+## explicit
+github.com/fatih/color
+# github.com/kr/pretty v0.2.0
+## explicit
+# github.com/mattn/go-colorable v0.1.8
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.12
+github.com/mattn/go-isatty
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
+# github.com/sergi/go-diff v1.2.0
+## explicit
+github.com/sergi/go-diff/diffmatchpatch
+# github.com/stretchr/testify v1.6.1
+## explicit
+# golang.org/x/sys v0.0.0-20210228012217-479acdf4ea46
+## explicit
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/unix
