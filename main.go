@@ -12,12 +12,12 @@ import (
 
 var CLI struct {
 	Run struct {
-		Hash string   `arg name:"hash" help:"Hash to verify. Format: sha256=<hash>"`
+		Hash string   `arg name:"hash|url" help:"Hash to verify. You can provide a list separated by a comma (,) and no space. Format: sha256=<hash>[,sha256=<hash2>,...], Or a URL to a flat file to fetch with a list of hashes, one per line. Format: https://example.com/file.txt"`
 		Cmd  []string `arg optional name:"cmd" help:"Command to execute"`
 	} `cmd help:"Verify and run a command"`
 
 	Check struct {
-		Hash string   `arg name:"hash" help:"Hash to verify. Format: sha256=<hash>"`
+		Hash string   `arg name:"hash|url" help:"Hash to verify. You can provide a list separated by a comma (,) and no space. Format: sha256=<hash>[,sha256=<hash2>,...], Or a URL to a flat file to fetch with a list of hashes, one per line. Format: https://example.com/file.txt"`
 		Cmd  []string `arg optional name:"cmd" help:"Command to execute"`
 	} `cmd help:"Verify a command"`
 
@@ -54,7 +54,7 @@ func main() {
 	preflight := pkg.NewPreflight(lookup)
 
 	switch ctx.Command() {
-	case "run <hash>":
+	case "run <hash|url>":
 		// piping
 		var fin io.Reader = os.Stdin
 		s, err := ioutil.ReadAll(fin)
@@ -68,13 +68,13 @@ func main() {
 			os.Exit(1)
 		}
 
-	case "run <hash> <cmd>":
+	case "run <hash|url> <cmd>":
 		err := preflight.Exec(CLI.Run.Cmd, CLI.Run.Hash)
 		if err != nil {
 			os.Exit(1)
 		}
 
-	case "check <hash>":
+	case "check <hash|url>":
 		// piping
 		var fin io.Reader = os.Stdin
 		s, err := ioutil.ReadAll(fin)
@@ -84,21 +84,30 @@ func main() {
 		}
 
 		content := string(s)
-		res := preflight.Check(content, CLI.Check.Hash)
+		res, err := preflight.Check(content, CLI.Check.Hash)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
 		if !res.Ok {
 			preflight.Porcelain.CheckFailed(res)
 			os.Exit(1)
 		}
 		fmt.Print(content) // give back so piping can continue
 
-	case "check <hash> <cmd>":
+	case "check <hash|url> <cmd>":
 		s, err := ioutil.ReadFile(CLI.Check.Cmd[0])
 		if err != nil {
 			fmt.Printf("cannot open %v: %v", CLI.Check.Cmd[0], err)
 			os.Exit(1)
 		}
 
-		res := preflight.Check(string(s), CLI.Check.Hash)
+		res, err := preflight.Check(string(s), CLI.Check.Hash)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+
 		if !res.Ok {
 			preflight.Porcelain.CheckFailed(res)
 			os.Exit(1)
@@ -115,8 +124,13 @@ func main() {
 			CLI.Create.Digest = "sha256"
 		}
 
-		res := preflight.Check(string(s), fmt.Sprintf("%v=?", CLI.Create.Digest))
-		if res.Lookup.Vulnerable {
+		res, err := preflight.Check(string(s), fmt.Sprintf("%v=?", CLI.Create.Digest))
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+
+		if res.HasLookupVulns() {
 			preflight.Porcelain.CheckFailed(res)
 			os.Exit(1)
 		}
@@ -133,8 +147,9 @@ func main() {
 			CLI.Create.Digest = "sha256"
 		}
 
-		res := preflight.Check(string(s), fmt.Sprintf("%v=?", CLI.Create.Digest))
-		if res.Lookup.Vulnerable {
+		res, err := preflight.Check(string(s), fmt.Sprintf("%v=?", CLI.Create.Digest))
+
+		if res.HasLookupVulns() {
 			preflight.Porcelain.CheckFailed(res)
 			os.Exit(1)
 		}

@@ -49,9 +49,13 @@ $ brew tap spectralops/tap && brew install preflight
 $ curl -L https://XXX | preflight run sha256=1ce...2244a6e86
 ⌛️ Preflight starting
 ❌ Preflight failed:
-   Digest does not match.
-     Expected: <...>
-     Actual: <...>
+Digest does not match.
+
+Expected:
+<...>
+
+Actual: 
+<...>
   
    Information:
    It is recommended to inspect the modified file contents.
@@ -117,6 +121,35 @@ steps:
 ```
 
 ----
+
+## :bulb: Dealing with changing runnables & auto updates
+
+When updating an old binary or script to a new updated version, there will be at least two (2) valid digests "live" and just replacing the single digest used will fail for the older runnable which may still be running somewhere.
+
+```
+$ preflight <hash list|https://url/to/hash-list>
+```
+
+To support updates and rolling/auto updates of scripts and binaries we basically need to validate against `<old hash>` + `<new hash>` at all times, until everyone upgrades to the new script. Preflight validates against a `list of hashes` or better, give it a _live_ URL of `valid hashes` and it will validate against it.
+
+
+```
+curl .. | ./ci/preflight run sha256=d6aa3207c4908d123bd8af62ec0538e3f2b9f257c3de62fad4e29cd3b59b41d9,sha256=<new hash>,...
+```
+
+Or to a live URL:
+```
+curl .. | ./ci/preflight run https://dl.example.com/hashes.txt
+```
+
+
+Use this when:
+
+* Use multiple digests verbatim, when your runnables change often, but not too often
+* Use a URL when your runnables change often. Remember to follow the chain of trust. This will now mean that:
+  * Your hash list URL is now a source of trust
+  * Visually: we're swapping the chain of trust like so `curl <foreign trust> | ./ci/preflight <own trust>`
+
 ## :running: Running scripts and binaries
 
 **Piping:**
@@ -211,6 +244,39 @@ Information:
   Vulnerability: Hash was found in a vulnerable digest list
   More: malshare.current.sha256.txt
 
+```
+## VirusTotal Lookup
+
+You can use the [virus total community]() API access to lookup your hashes.
+
+
+
+* Set `PF_VT_TOKEN=your-virustotal-api-key`
+
+With this configured `preflight` will automatically create the VirusTotal lookup provider and validate digest with it.
+
+
+Here is a full example for your CI, combining `preflight` with VirusTotal:
+
+```
+env:
+   PF_VT_TOKEN: {{secrets.PF_VT_TOKEN}}
+
+steps: 
+- curl https://... | preflight <sha>
+```
+
+
+**Result:**
+
+```
+$ PF_VT_TOKEN=xxx preflight check e86d4eb1e888bd625389f2e50644be67a6bdbd77ff3bceaaf182d45860b88d80 kx-leecher.exe
+⌛️ Preflight starting using VirusTotal
+❌ Preflight failed: Digest matches but marked as vulnerable.
+
+Information:
+  Vulnerability: VirusTotal stats - malicious: 40, suspicious 0
+  More: https://www.virustotal.com/gui/file/e86d4eb1e888bd625389f2e50644be67a6bdbd77ff3bceaaf182d45860b88d80/detection
 ```
 ## Other lookup types?
 
