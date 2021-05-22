@@ -8,39 +8,49 @@ import (
 
 func TestGoodMD5Check(t *testing.T) {
 	pf := NewPreflight(&NoLookup{})
-	res := pf.Check("echo 'hello'", "md5=a849639cc38d82e3c0ac4e4dfd8186dd")
+	res, err := pf.Check("echo 'hello'", "md5=a849639cc38d82e3c0ac4e4dfd8186dd")
+	assert.NoError(t, err)
 	assert.Equal(t, true, res.Ok)
 }
 func TestGoodSHA1Check(t *testing.T) {
 	pf := NewPreflight(&NoLookup{})
-	res := pf.Check("echo 'hello'", "sha1=098f8f78f1e13e2a2eee10d6974daebf892e4a71")
+	res, err := pf.Check("echo 'hello'", "sha1=098f8f78f1e13e2a2eee10d6974daebf892e4a71")
+	assert.NoError(t, err)
 	assert.Equal(t, true, res.Ok)
 }
 func TestGoodSHA256Check(t *testing.T) {
 	pf := NewPreflight(&NoLookup{})
-	res := pf.Check("echo 'hello'", "sha256=3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348")
+	res, err := pf.Check("echo 'hello'", "sha256=3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348")
+	assert.NoError(t, err)
 	assert.Equal(t, true, res.Ok)
 }
 func TestGoodSHA256DefaultCheck(t *testing.T) {
 	pf := NewPreflight(&NoLookup{})
-	res := pf.Check("echo 'hello'", "3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348")
+	res, err := pf.Check("echo 'hello'", "3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348")
+	assert.NoError(t, err)
 	assert.Equal(t, true, res.Ok)
 }
 func TestBadCheck(t *testing.T) {
 	pf := NewPreflight(&NoLookup{})
-	res := pf.Check("abcd", "123")
+	res, err := pf.Check("abcd", "123")
+	assert.NoError(t, err)
 	sig := "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589"
-	assert.Equal(t, res.ActualDigest, sig)
-	assert.Equal(t, res.ExpectedDigest, "123")
+	assert.Equal(t, res.ActualDigest.SHA256, sig)
+	assert.Nil(t, res.ValidDigest)
+	assert.Equal(t, res.ExpectedDigests[0].content, "123")
+	assert.Equal(t, res.ExpectedDigests[0].digest, "sha256")
 	assert.Equal(t, false, res.Ok)
 }
 
 func TestGoodCheck(t *testing.T) {
 	pf := NewPreflight(&NoLookup{})
 	sig := "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589"
-	res := pf.Check("abcd", sig)
-	assert.Equal(t, res.ActualDigest, sig)
-	assert.Equal(t, res.ExpectedDigest, sig)
+	res, err := pf.Check("abcd", sig)
+	assert.NoError(t, err)
+	assert.Equal(t, res.ActualDigest.SHA256, sig)
+	assert.Equal(t, res.ValidDigest.content, sig)
+	assert.Equal(t, res.ExpectedDigests[0].content, sig)
+	assert.Equal(t, res.ExpectedDigests[0].digest, "sha256")
 	assert.Equal(t, true, res.Ok)
 }
 
@@ -57,10 +67,15 @@ func (f *FakeLookup) Hash(digest Digest) LookupResult {
 func TestVulnerableCheck(t *testing.T) {
 	pf := NewPreflight(&FakeLookup{})
 	sig := "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589"
-	res := pf.Check("abcd", sig)
-	assert.Equal(t, res.ActualDigest, sig)
-	assert.Equal(t, res.ExpectedDigest, sig)
-	assert.Equal(t, res.Lookup.Vulnerable, true)
+	res, err := pf.Check("abcd", sig)
+	assert.NoError(t, err)
+	assert.Equal(t, res.ActualDigest.SHA256, sig)
+	assert.Equal(t, res.ExpectedDigests[0].content, sig)
+	assert.Equal(t, res.ValidDigest.content, sig)
+	assert.NotNil(t, res.LookupResult)
+	assert.Equal(t, res.LookupResult.Vulnerable, true)
+	assert.Equal(t, res.HasValidationVulns(), false)
+	assert.Equal(t, res.HasLookupVulns(), true)
 	assert.Equal(t, false, res.Ok)
 }
 func ExampleExecBadDigest() {
@@ -68,11 +83,16 @@ func ExampleExecBadDigest() {
 	pf.Exec([]string{"../test.sh"}, "123")
 
 	// Output:
-	// ⌛️ Preflight starting with Fake
-	// ❌ Preflight failed: Digest does not match.
-	//
-	//    Expected: 123
-	//    Actual: fe6d02cf15642ff8d5f61cad6d636a62fd46a5e5a49c06733fece838f5fa9d85
+	// 	⌛️ Preflight starting with Fake
+	// 	Preflight failed: Digest does not match.
+
+	//   Expected:
+	//   sha256=123
+
+	//   Actual:
+	//   sha256=3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348
+	//   OR: sha1=098f8f78f1e13e2a2eee10d6974daebf892e4a71
+	//   OR: md5=a849639cc38d82e3c0ac4e4dfd8186dd
 }
 
 func ExampleExecVuln() {
@@ -102,11 +122,16 @@ func ExampleExecPipedBadDigest() {
 	pf.ExecPiped("echo 'hello'", "123")
 
 	// Output:
-	// ⌛️ Preflight starting with Fake
-	// ❌ Preflight failed: Digest does not match.
-	//
-	//    Expected: 123
-	//    Actual: 3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348
+	// 	⌛️ Preflight starting with Fake
+	// 	Preflight failed: Digest does not match.
+
+	//   Expected:
+	//   sha256=123
+
+	//   Actual:
+	//   sha256=3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348
+	//   OR: sha1=098f8f78f1e13e2a2eee10d6974daebf892e4a71
+	//   OR: md5=a849639cc38d82e3c0ac4e4dfd8186dd
 }
 
 func ExampleExecPipedVuln() {

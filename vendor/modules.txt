@@ -27,6 +27,9 @@ github.com/pkg/errors
 github.com/sergi/go-diff/diffmatchpatch
 # github.com/stretchr/testify v1.6.1
 ## explicit
+# github.com/thoas/go-funk v0.8.0
+## explicit
+github.com/thoas/go-funk
 # golang.org/x/sys v0.0.0-20210228012217-479acdf4ea46
 ## explicit
 golang.org/x/sys/internal/unsafeheader
