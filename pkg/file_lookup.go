@@ -27,7 +27,7 @@ func NewFileLookup(f string) (Lookup, error) {
 func (p *FileLookup) Name() string {
 	return fmt.Sprintf("file lookup: %v", p.file)
 }
-func (p *FileLookup) Hash(digest Digest) LookupResult {
+func (p *FileLookup) Hash(digest Digest) (LookupResult, error) {
 	if strings.Contains(p.content, digest.SHA1) ||
 		strings.Contains(p.content, digest.MD5) ||
 		strings.Contains(p.content, digest.SHA256) {
@@ -36,7 +36,7 @@ func (p *FileLookup) Hash(digest Digest) LookupResult {
 			Vulnerable: true,
 			Message:    "Hash was found in a vulnerable digest list",
 			Link:       p.file,
-		}
+		}, nil
 	}
-	return LookupResult{}
+	return LookupResult{}, nil
 }

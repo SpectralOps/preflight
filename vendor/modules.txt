@@ -1,3 +1,6 @@
+# github.com/VirusTotal/vt-go v0.0.0-20210415081439-66c331640a9d
+## explicit
+github.com/VirusTotal/vt-go
 # github.com/alecthomas/assert v0.0.0-20170929043011-405dbfeb8e38
 ## explicit
 github.com/alecthomas/assert
@@ -25,8 +28,8 @@ github.com/pkg/errors
 # github.com/sergi/go-diff v1.2.0
 ## explicit
 github.com/sergi/go-diff/diffmatchpatch
-# github.com/stretchr/testify v1.6.1
-## explicit
+# github.com/thedevsaddam/gojsonq/v2 v2.5.2
+github.com/thedevsaddam/gojsonq/v2
 # github.com/thoas/go-funk v0.8.0
 ## explicit
 github.com/thoas/go-funk

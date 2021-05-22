@@ -26,10 +26,16 @@ func fmtSigs(sigs []Signature) string {
 	}).([]string), ", ")
 }
 
+func fmtLookups(sigs []Lookup) string {
+	return strings.Join(funk.Map(sigs, func(lk Lookup) string {
+		return lk.Name()
+	}).([]string), ", ")
+}
+
 func (p *Porcelain) Start(pf *Preflight) {
-	name := pf.Lookup.Name()
-	if name != "" {
-		name = fmt.Sprintf(" with %s", name)
+	name := ""
+	if len(pf.Lookup) > 1 { // first item is the empty lookup
+		name = fmt.Sprintf(" with %s", fmtLookups(pf.Lookup[1:]))
 	}
 	fmt.Printf("%v Preflight starting%v\n", EMO_TIME, name)
 }

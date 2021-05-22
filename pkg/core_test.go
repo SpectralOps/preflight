@@ -7,31 +7,31 @@ import (
 )
 
 func TestGoodMD5Check(t *testing.T) {
-	pf := NewPreflight(&NoLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}})
 	res, err := pf.Check("echo 'hello'", "md5=a849639cc38d82e3c0ac4e4dfd8186dd")
 	assert.NoError(t, err)
 	assert.Equal(t, true, res.Ok)
 }
 func TestGoodSHA1Check(t *testing.T) {
-	pf := NewPreflight(&NoLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}})
 	res, err := pf.Check("echo 'hello'", "sha1=098f8f78f1e13e2a2eee10d6974daebf892e4a71")
 	assert.NoError(t, err)
 	assert.Equal(t, true, res.Ok)
 }
 func TestGoodSHA256Check(t *testing.T) {
-	pf := NewPreflight(&NoLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}})
 	res, err := pf.Check("echo 'hello'", "sha256=3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348")
 	assert.NoError(t, err)
 	assert.Equal(t, true, res.Ok)
 }
 func TestGoodSHA256DefaultCheck(t *testing.T) {
-	pf := NewPreflight(&NoLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}})
 	res, err := pf.Check("echo 'hello'", "3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348")
 	assert.NoError(t, err)
 	assert.Equal(t, true, res.Ok)
 }
 func TestBadCheck(t *testing.T) {
-	pf := NewPreflight(&NoLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}})
 	res, err := pf.Check("abcd", "123")
 	assert.NoError(t, err)
 	sig := "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589"
@@ -43,7 +43,7 @@ func TestBadCheck(t *testing.T) {
 }
 
 func TestGoodCheck(t *testing.T) {
-	pf := NewPreflight(&NoLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}})
 	sig := "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589"
 	res, err := pf.Check("abcd", sig)
 	assert.NoError(t, err)
@@ -61,11 +61,11 @@ func (f *FakeLookup) Name() string {
 	return "Fake"
 }
 
-func (f *FakeLookup) Hash(digest Digest) LookupResult {
-	return LookupResult{Vulnerable: true, Message: "vuln", Link: "https://example.com/1"}
+func (f *FakeLookup) Hash(digest Digest) (LookupResult, error) {
+	return LookupResult{Vulnerable: true, Message: "vuln", Link: "https://example.com/1"}, nil
 }
 func TestVulnerableCheck(t *testing.T) {
-	pf := NewPreflight(&FakeLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}, &FakeLookup{}})
 	sig := "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589"
 	res, err := pf.Check("abcd", sig)
 	assert.NoError(t, err)
@@ -79,7 +79,7 @@ func TestVulnerableCheck(t *testing.T) {
 	assert.Equal(t, false, res.Ok)
 }
 func ExampleExecBadDigest() {
-	pf := NewPreflight(&FakeLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}, &FakeLookup{}})
 	pf.Exec([]string{"../test.sh"}, "123")
 
 	// Output:
@@ -96,7 +96,7 @@ func ExampleExecBadDigest() {
 }
 
 func ExampleExecVuln() {
-	pf := NewPreflight(&FakeLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}, &FakeLookup{}})
 	pf.Exec([]string{"../test.sh"}, "fe6d02cf15642ff8d5f61cad6d636a62fd46a5e5a49c06733fece838f5fa9d85")
 	// Output:
 	// ⌛️ Preflight starting with Fake
@@ -108,7 +108,7 @@ func ExampleExecVuln() {
 }
 
 func ExampleExecOk() {
-	pf := NewPreflight(&NoLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}})
 	pf.Exec([]string{"../test.sh"}, "fe6d02cf15642ff8d5f61cad6d636a62fd46a5e5a49c06733fece838f5fa9d85")
 
 	// Output:
@@ -118,7 +118,7 @@ func ExampleExecOk() {
 }
 
 func ExampleExecPipedBadDigest() {
-	pf := NewPreflight(&FakeLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}, &FakeLookup{}})
 	pf.ExecPiped("echo 'hello'", "123")
 
 	// Output:
@@ -135,7 +135,7 @@ func ExampleExecPipedBadDigest() {
 }
 
 func ExampleExecPipedVuln() {
-	pf := NewPreflight(&FakeLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}, &FakeLookup{}})
 	pf.ExecPiped("echo 'hello'", "3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348")
 	// Output:
 	// ⌛️ Preflight starting with Fake
@@ -147,7 +147,7 @@ func ExampleExecPipedVuln() {
 }
 
 func ExampleExecPipedOk() {
-	pf := NewPreflight(&NoLookup{})
+	pf := NewPreflight([]Lookup{&NoLookup{}})
 	pf.ExecPiped("echo 'hello'", "3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348")
 
 	// Output:
@@ -158,7 +158,7 @@ func ExampleExecPipedOk() {
 
 func ExampleFileLookup() {
 	lookup, _ := NewFileLookup("../file_lookup_list.txt")
-	pf := NewPreflight(lookup)
+	pf := NewPreflight([]Lookup{&NoLookup{}, lookup})
 	pf.ExecPiped("echo 'hello'", "3b084aa6ad2246428c9270825d8631e077b7e7c9bb16f6cafb482bc7fd63e348")
 
 	// Output:

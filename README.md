@@ -245,6 +245,39 @@ Information:
   More: malshare.current.sha256.txt
 
 ```
+## VirusTotal Lookup
+
+You can use the [virus total community]() API access to lookup your hashes.
+
+
+
+* Set `PF_VT_TOKEN=your-virustotal-api-key`
+
+With this configured `preflight` will automatically create the VirusTotal lookup provider and validate digest with it.
+
+
+Here is a full example for your CI, combining `preflight` with VirusTotal:
+
+```
+env:
+   PF_VT_TOKEN: {{secrets.PF_VT_TOKEN}}
+
+steps: 
+- curl https://... | preflight <sha>
+```
+
+
+**Result:**
+
+```
+$ PF_VT_TOKEN=xxx preflight check e86d4eb1e888bd625389f2e50644be67a6bdbd77ff3bceaaf182d45860b88d80 kx-leecher.exe
+⌛️ Preflight starting using VirusTotal
+❌ Preflight failed: Digest matches but marked as vulnerable.
+
+Information:
+  Vulnerability: VirusTotal stats - malicious: 40, suspicious 0
+  More: https://www.virustotal.com/gui/file/e86d4eb1e888bd625389f2e50644be67a6bdbd77ff3bceaaf182d45860b88d80/detection
+```
 ## Other lookup types?
 
 We've established that a _file lookup_ is universal and general enough to be useful to everyone. However, you might prefer your own vendor, or a service such as VirusTotal -- `preflight`'s architecture is pluggable and we're accepting [pull requests](https://github.com/spectralops/preflight).

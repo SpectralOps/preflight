@@ -12,12 +12,12 @@ import (
 
 var CLI struct {
 	Run struct {
-		Hash string   `arg name:"hash|url" help:"Hash to verify. You can provide a list seperated by a comma (,) and no space. Format: sha256=<hash>[,sha256=<hash2>,...], Or a URL to a flat file to fetch with a list of hashes, one per line. Format: https://example.com/file.txt"`
+		Hash string   `arg name:"hash|url" help:"Hash to verify. You can provide a list separated by a comma (,) and no space. Format: sha256=<hash>[,sha256=<hash2>,...], Or a URL to a flat file to fetch with a list of hashes, one per line. Format: https://example.com/file.txt"`
 		Cmd  []string `arg optional name:"cmd" help:"Command to execute"`
 	} `cmd help:"Verify and run a command"`
 
 	Check struct {
-		Hash string   `arg name:"hash|url" help:"Hash to verify. You can provide a list seperated by a comma (,) and no space. Format: sha256=<hash>[,sha256=<hash2>,...], Or a URL to a flat file to fetch with a list of hashes, one per line. Format: https://example.com/file.txt"`
+		Hash string   `arg name:"hash|url" help:"Hash to verify. You can provide a list separated by a comma (,) and no space. Format: sha256=<hash>[,sha256=<hash2>,...], Or a URL to a flat file to fetch with a list of hashes, one per line. Format: https://example.com/file.txt"`
 		Cmd  []string `arg optional name:"cmd" help:"Command to execute"`
 	} `cmd help:"Verify a command"`
 

@@ -79,7 +79,7 @@ func (c *CheckResult) HasLookupVulns() bool {
 }
 
 type Lookup interface {
-	Hash(digest Digest) LookupResult
+	Hash(digest Digest) (LookupResult, error)
 	Name() string
 }
 
@@ -90,16 +90,37 @@ type LookupResult struct {
 }
 
 type Preflight struct {
-	Lookup    Lookup
+	Lookup    []Lookup
 	Porcelain *Porcelain
 }
 
-func GetLookup() (Lookup, error) {
+func GetLookup() ([]Lookup, error) {
+	// base lookup is always "no lookup"
+	lookups := []Lookup{&NoLookup{}}
+
+	//
+	// add: file list lookup
+	//
 	if os.Getenv("PF_FILE_LOOKUP") != "" {
-		return NewFileLookup(os.Getenv("PF_FILE_LOOKUP"))
+		lu, err := NewFileLookup(os.Getenv("PF_FILE_LOOKUP"))
+		if err != nil {
+			return nil, err
+		}
+		lookups = append(lookups, lu)
 	}
 
-	return &NoLookup{}, nil
+	//
+	// add: virustotal lookup
+	//
+	if os.Getenv("PF_VT_TOKEN") != "" {
+		lu, err := NewVirusTotalLookup(os.Getenv("PF_VT_TOKEN"))
+		if err != nil {
+			return nil, err
+		}
+		lookups = append(lookups, lu)
+	}
+
+	return lookups, nil
 }
 
 func createDigest(s string) Digest {
@@ -122,13 +143,7 @@ func createSignature(sig string) Signature {
 	return signature
 }
 
-func digestTuple(s, sig string) (Digest, Signature) {
-	signature := createSignature(sig)
-	digest := createDigest(s)
-	return digest, signature
-}
-
-func NewPreflight(lookup Lookup) *Preflight {
+func NewPreflight(lookup []Lookup) *Preflight {
 	return &Preflight{
 		Lookup:    lookup,
 		Porcelain: &Porcelain{},
@@ -138,7 +153,7 @@ func NewPreflight(lookup Lookup) *Preflight {
 func (a *Preflight) Check(script, siglist string) (*CheckResult, error) {
 	sigs, err := parsehashList(siglist)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot parse hashlist: %v", err)
 	}
 	digest := createDigest(script)
 
@@ -156,23 +171,24 @@ func (a *Preflight) Check(script, siglist string) (*CheckResult, error) {
 	}
 
 	validDigest := res.(Signature)
-	// parseHashlist(sig) -> []Signature
-	// check should return err, wired by parseHashlist + hash lookup
-	// XXX untangle the digest tuple:
-	// createDigest
-	// parseSignature, accept sig []string
-	// "verify" a signature
-	// "validate" a hash
-	// 0. get digest object
-	// 1. parse all digs, then verify them. if one passes, we're OK
-	// 2. next, the one that passes we want to lookup
-	lookup := a.Lookup.Hash(digest)
+	var lookupResult LookupResult
+	for li := range a.Lookup {
+		lookup := a.Lookup[li]
+		lookupResult, err = lookup.Hash(digest)
+		if err != nil {
+			return nil, fmt.Errorf("%v - cannot look up: %v", lookup.Name(), err)
+		}
+		if lookupResult.Vulnerable {
+			break
+		}
+	}
+
 	return &CheckResult{
 		ExpectedDigests: sigs,
 		ActualDigest:    digest,
 		ValidDigest:     &validDigest,
-		LookupResult:    &lookup,
-		Ok:              !lookup.Vulnerable,
+		LookupResult:    &lookupResult,
+		Ok:              !lookupResult.Vulnerable,
 	}, nil
 }
 
