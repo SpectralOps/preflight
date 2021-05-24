@@ -87,6 +87,16 @@ $ curl -L https://XXX | preflight run sha256=1ce...2244a6e86
 
 # :sparkles:  Examples
 
+## :octocat: Github action
+
+You can install Preflight with a [Github action](https://github.com/marketplace/actions/setup-preflight), or use it like this:
+
+```yaml
+   - name: Setup Preflight
+     uses: spectralops/setup-preflight@v1
+```
+
+And now, you have a `preflight` binary to play with.
 ## :golf: Running codecov safely in your CI
 
 First, let's create a hash (before creating it, review the script manually and see that it's not doing anything funny):
