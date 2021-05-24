@@ -135,7 +135,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		fmt.Printf("%v=%v\n", CLI.Create.Digest, res.ActualDigest)
+		fmt.Printf("%v=%v\n", CLI.Create.Digest, res.ActualDigest.For(CLI.Create.Digest))
 
 	case "create <file>":
 		s, err := ioutil.ReadFile(CLI.Create.File)
@@ -154,7 +154,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		fmt.Printf("%v=%v\n", CLI.Create.Digest, res.ActualDigest)
+		fmt.Printf("%v=%v\n", CLI.Create.Digest, res.ActualDigest.For(CLI.Create.Digest))
 
 	default:
 		println(ctx.Command())

@@ -25,11 +25,25 @@ type Digest struct {
 	MD5    string
 }
 
+const SHA1 = "sha1"
+const MD5 = "md5"
+
+func (d *Digest) For(kind string) string {
+	switch kind {
+	case SHA1:
+		return d.SHA1
+	case MD5:
+		return d.MD5
+	default:
+		return d.SHA256
+	}
+}
+
 func (d *Digest) Verify(s Signature) (ok bool, expectedHash string) {
 	switch s.digest {
-	case "sha1":
+	case SHA1:
 		return d.SHA1 == s.content, d.SHA1
-	case "md5":
+	case MD5:
 		return d.MD5 == s.content, d.MD5
 	default:
 		return d.SHA256 == s.content, d.SHA256
