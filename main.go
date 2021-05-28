@@ -10,8 +10,6 @@ import (
 	"github.com/spectralops/preflight/pkg"
 )
 
-type VersionFlag string
-
 var CLI struct {
 	Version struct {
 	} `cmd  help:"Print version information and quit"`
