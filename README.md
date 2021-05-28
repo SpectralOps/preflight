@@ -148,6 +148,60 @@ steps:
 
 ----
 
+## :golf: Building Docker images in a secure way
+
+It's recommended to use `preflight` when you're building Docker images, and are installing via `curl | sh` scripts that vendors give you.
+
+Before:
+
+```Dockerfile
+FROM alpine:3.9 
+RUN apk add ca-certificates
+RUN apk add curl coreutils
+
+RUN cd /opt && curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.7.2 sh
+```
+
+After (securely building preflight from source + validating Istio with preflight):
+
+```Dockerfile
+FROM golang:1.16-alpine AS preflight_builder
+
+RUN apk add --no-cache git
+WORKDIR /builds
+
+RUN GOBIN=`pwd` go get -u github.com/spectralops/preflight
+
+# Build from a bare image, copy built binary
+FROM alpine:3.9 
+RUN apk add ca-certificates
+RUN apk add curl coreutils
+
+COPY --from=preflight_builder /builds/preflight /usr/local/bin
+
+# create a hash with:
+# curl -L https://istio.io/downloadIstio | preflight create
+RUN cd /opt && curl -L https://istio.io/downloadIstio | \
+    ISTIO_VERSION=1.7.2 \
+    preflight run sha256=e826fb57c6705cca0b6464edf4c1701d4bd5fd5879f5820fca78941c0a83ce64
+```
+
+Using `preflight` we're also getting a nice confirmation badge during the build process:
+
+
+```
+... docker build log...
+
+⌛️ Preflight starting
+✅ Preflight verified
+
+Downloading istio-1.7.2 from https://github.com/istio/istio/releases/download/1.7.2/istio-1.7.2-linux-amd64.tar.gz ...
+
+Istio 1.7.2 Download Complete!
+```
+
+
+
 ## :bulb: Dealing with changing runnables & auto updates
 
 When updating an old binary or script to a new updated version, there will be at least two (2) valid digests "live" and just replacing the single digest used will fail for the older runnable which may still be running somewhere.
