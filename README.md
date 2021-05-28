@@ -30,6 +30,22 @@ The best way, is that you grab the source, compile it yourself, and use your own
 * Put it on your own S3 bucket
 * Drop it on your own [Artifactory](https://jfrog.com/artifactory/) or similar
 * Push it directly into your repos (it should be as small as 4mb, and almost never change so, Git should work nicely with it)
+* Build from source into your containers directly:
+
+```Dockerfile
+FROM golang:1.16-alpine AS preflight_builder
+RUN apk add --no-cache git
+WORKDIR /builds
+RUN GOBIN=`pwd` go get -u github.com/spectralops/preflight
+
+# Build from a bare image, copy built binary
+FROM alpine:3.9 
+RUN apk add ca-certificates
+COPY --from=preflight_builder /builds/preflight /usr/local/bin
+
+# use preflight as you wish
+RUN curl https://.. | preflight run <digest>
+```
 
 
 
