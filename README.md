@@ -16,7 +16,8 @@
 
 <p align="center">
 <img src="https://github.com/spectralops/preflight/actions/workflows/ci.yml/badge.svg"/>
-
+<br/>
+<img src="media/pf-intro.gif"/>
 </p>
 
 # :thinking: What is it?
