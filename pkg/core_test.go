@@ -166,3 +166,21 @@ func ExampleFileLookup() {
 	// ✅ Preflight verified
 	// hello
 }
+
+func TestCreateSignature(t *testing.T) {
+	s := createSignature("sha256=46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33 # foobaz")
+	assert.Equal(t, s.String(), "sha256=46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33")
+	s = createSignature("46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33 # foobar")
+	assert.Equal(t, s.String(), "sha256=46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33")
+	s = createSignature("46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33 # foobar v2")
+	assert.Equal(t, s.String(), "sha256=46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33")
+	s = createSignature("46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33 foobar v2")
+	assert.Equal(t, s.String(), "sha256=46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33")
+	s = createSignature("46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33")
+	assert.Equal(t, s.String(), "sha256=46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33")
+	s = createSignature("   46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33")
+	assert.Equal(t, s.String(), "sha256=46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33")
+	s = createSignature("   sha256=46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33 ")
+	assert.Equal(t, s.String(), "sha256=46c2cf18d822cc3f310b320240259d6735d4a3ae06d82cb705a3e0e8d520f33")
+
+}

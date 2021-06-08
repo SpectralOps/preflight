@@ -148,6 +148,8 @@ func createDigest(s string) Digest {
 }
 
 func createSignature(sig string) Signature {
+	sig = strings.Trim(sig, " ")     // remove any space-y artifacts
+	sig = strings.Split(sig, " ")[0] // start up to first space is important, throw away the rest
 	parts := strings.Split(sig, "=")
 	signature := Signature{content: sig, digest: "sha256"}
 	if len(parts) > 1 {
