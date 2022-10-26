@@ -295,7 +295,7 @@ md5=cb62874fea06458b2b0cabf2322c9d55
 
 ## File Lookup
 
-You can download a daily list of malware signatures from [malshare.com]() or any equivalent service. Here is a [direct link to such a list](https://www.malshare.com/daily/malshare.current.sha256.txt).
+You can download a daily list of malware signatures from [malshare.com](https://www.malshare.com) or any equivalent service. Here is a [direct link to such a list](https://www.malshare.com/daily/malshare.current.sha256.txt).
 
 Then:
 
