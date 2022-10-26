@@ -53,7 +53,7 @@ RUN curl https://.. | preflight run <digest>
 
 If you want to just get started quickly on your workstation, you can [download a release](https://github.com/spectralops/preflight/releases) or install `preflight` with homebrew:
 
-```
+```bash
 $ brew tap spectralops/tap && brew install preflight
 ````
 
@@ -208,19 +208,19 @@ Istio 1.7.2 Download Complete!
 
 When updating an old binary or script to a new updated version, there will be at least two (2) valid digests "live" and just replacing the single digest used will fail for the older runnable which may still be running somewhere.
 
-```
+```bash
 $ preflight <hash list|https://url/to/hash-list>
 ```
 
 To support updates and rolling/auto updates of scripts and binaries we basically need to validate against `<old hash>` + `<new hash>` at all times, until everyone upgrades to the new script. Preflight validates against a `list of hashes` or better, give it a _live_ URL of `valid hashes` and it will validate against it.
 
 
-```
+```bash
 curl .. | ./ci/preflight run sha256=d6aa3207c4908d123bd8af62ec0538e3f2b9f257c3de62fad4e29cd3b59b41d9,sha256=<new hash>,...
 ```
 
 Or to a live URL:
-```
+```bash
 curl .. | ./ci/preflight run https://dl.example.com/hashes.txt
 ```
 
@@ -306,7 +306,7 @@ With this configured `preflight` will search for all digest types in this file b
 
 Here is a full example for your CI, combining `preflight` with Malshare:
 
-```
+```yaml
 env:
    PF_FILE_LOOKUP: malshare.current.sha256.txt
 
@@ -317,7 +317,7 @@ steps:
 
 **Result:**
 
-```
+```bash
 $ PF_FILE_LOOKUP=malshare.current.sha256.txt preflight run fe6d02cf15642ff8d5f61cad6d636a62fd46a5e5a49c06733fece838f5fa9d85 test.sh
 ⌛️ Preflight starting using file lookup: malshare.current.sha256.txt
 ❌ Preflight failed: Digest matches but marked as vulnerable.
@@ -340,7 +340,7 @@ With this configured `preflight` will automatically create the VirusTotal lookup
 
 Here is a full example for your CI, combining `preflight` with VirusTotal:
 
-```
+```yaml
 env:
    PF_VT_TOKEN: {{secrets.PF_VT_TOKEN}}
 
@@ -351,7 +351,7 @@ steps:
 
 **Result:**
 
-```
+```bash
 $ PF_VT_TOKEN=xxx preflight check e86d4eb1e888bd625389f2e50644be67a6bdbd77ff3bceaaf182d45860b88d80 kx-leecher.exe
 ⌛️ Preflight starting using VirusTotal
 ❌ Preflight failed: Digest matches but marked as vulnerable.
