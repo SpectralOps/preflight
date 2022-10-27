@@ -2,7 +2,7 @@ package pkg
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -15,7 +15,7 @@ type FileLookup struct {
 }
 
 func NewFileLookup(f string) (Lookup, error) {
-	content, err := ioutil.ReadFile(f)
+	content, err := os.ReadFile(f)
 	if err != nil {
 		return nil, fmt.Errorf("file lookup: cannot read file: %v", err)
 	}
