@@ -22,7 +22,7 @@ linters-settings:
       - wrapperFunc
   gocyclo:
     min-complexity: 20
-  golint:
+  revive:
     min-confidence: 0
   gomnd:
     settings:
@@ -62,7 +62,7 @@ linters:
     - gocyclo
     - gofmt
     - goimports
-    - golint
+    - revive
     - gomnd
     - goprintffuncname
     - gosec
