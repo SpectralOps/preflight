@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/alecthomas/kong"
@@ -60,7 +59,7 @@ func main() {
 	case "run <hash|url>":
 		// piping
 		var fin io.Reader = os.Stdin
-		s, err := ioutil.ReadAll(fin)
+		s, err := io.ReadAll(fin)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
@@ -80,7 +79,7 @@ func main() {
 	case "check <hash|url>":
 		// piping
 		var fin io.Reader = os.Stdin
-		s, err := ioutil.ReadAll(fin)
+		s, err := io.ReadAll(fin)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
@@ -99,7 +98,7 @@ func main() {
 		fmt.Print(content) // give back so piping can continue
 
 	case "check <hash|url> <cmd>":
-		s, err := ioutil.ReadFile(CLI.Check.Cmd[0])
+		s, err := os.ReadFile(CLI.Check.Cmd[0])
 		if err != nil {
 			fmt.Printf("cannot open %v: %v", CLI.Check.Cmd[0], err)
 			os.Exit(1)
@@ -118,7 +117,7 @@ func main() {
 
 	// XXX need some DRY
 	case "create":
-		s, err := ioutil.ReadAll(os.Stdin)
+		s, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
@@ -141,7 +140,7 @@ func main() {
 		fmt.Printf("%v=%v\n", CLI.Create.Digest, res.ActualDigest.For(CLI.Create.Digest))
 
 	case "create <file>":
-		s, err := ioutil.ReadFile(CLI.Create.File)
+		s, err := os.ReadFile(CLI.Create.File)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
