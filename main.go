@@ -68,12 +68,14 @@ func main() {
 
 		err = preflight.ExecPiped(string(s), CLI.Run.Hash)
 		if err != nil {
+			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
 
 	case "run <hash|url> <cmd>":
 		err := preflight.Exec(CLI.Run.Cmd, CLI.Run.Hash)
 		if err != nil {
+			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
 

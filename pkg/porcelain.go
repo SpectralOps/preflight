@@ -44,7 +44,7 @@ func (p *Porcelain) RunOk() {
 }
 
 func (p *Porcelain) CheckFailed(check *CheckResult) {
-	if check.ValidDigest == nil {
+	if check.HasValidationVulns() {
 
 		green := color.New(color.FgGreen).SprintFunc()
 		red := color.New(color.FgRed).SprintFunc()
@@ -61,7 +61,7 @@ Actual:
 			green(fmtSigs(check.ExpectedDigests)),
 			red(check.ActualDigest.String()),
 		)
-	} else if check.LookupResult != nil && check.LookupResult.Vulnerable {
+	} else if check.HasLookupVulns() {
 		fmt.Printf(`%v Preflight failed:`, EMO_FAILED)
 		fmt.Printf(` Digest matches but marked as vulnerable.
 
