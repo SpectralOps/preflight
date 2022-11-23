@@ -201,7 +201,7 @@ func (a *Preflight) ExecPiped(script, sig string) error {
 		return err
 	}
 	if !check.Ok {
-		a.Porcelain.CheckFailed(check)
+		a.Porcelain.ReportCheckResult(check)
 		return nil
 	}
 	a.Porcelain.RunOk()
@@ -225,7 +225,7 @@ func (a *Preflight) Exec(args []string, sig string) error {
 	}
 
 	if !check.Ok {
-		a.Porcelain.CheckFailed(check)
+		a.Porcelain.ReportCheckResult(check)
 		return nil
 	}
 

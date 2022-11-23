@@ -43,7 +43,7 @@ func (p *Porcelain) RunOk() {
 	fmt.Printf("%v Preflight verified\n", EMO_CHECK)
 }
 
-func (p *Porcelain) CheckFailed(check *CheckResult) {
+func (p *Porcelain) ReportCheckResult(check *CheckResult) {
 	if check.HasValidationVulns() {
 
 		green := color.New(color.FgGreen).SprintFunc()
