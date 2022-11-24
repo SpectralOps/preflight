@@ -4,13 +4,13 @@ package pkg
 import (
 	//nolint
 	"crypto/md5"
+	"io"
 	"net/http"
 
 	//nolint
 	"crypto/sha1"
 	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -215,7 +215,7 @@ func (a *Preflight) ExecPiped(script, sig string) error {
 
 func (a *Preflight) Exec(args []string, sig string) error {
 	a.Porcelain.Start(a)
-	s, err := ioutil.ReadFile(args[0])
+	s, err := os.ReadFile(args[0])
 	if err != nil {
 		return fmt.Errorf("cannot open %v: %v", args[0], err)
 	}
@@ -249,7 +249,7 @@ func parsehashList(hashArg string) ([]Signature, error) {
 			return nil, fmt.Errorf("cannot parse hash URL: %v", err)
 		}
 		defer resp.Body.Close()
-		res, err := ioutil.ReadAll(resp.Body)
+		res, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("cannot read hash URL content: %v", err)
 		}
