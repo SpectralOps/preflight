@@ -67,12 +67,14 @@ func main() {
 
 		err = preflight.ExecPiped(string(s), CLI.Run.Hash)
 		if err != nil {
+			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
 
 	case "run <hash|url> <cmd>":
 		err := preflight.Exec(CLI.Run.Cmd, CLI.Run.Hash)
 		if err != nil {
+			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
 
@@ -92,7 +94,7 @@ func main() {
 			os.Exit(1)
 		}
 		if !res.Ok {
-			preflight.Porcelain.CheckFailed(res)
+			preflight.Porcelain.ReportCheckResult(res)
 			os.Exit(1)
 		}
 		fmt.Print(content) // give back so piping can continue
@@ -111,7 +113,7 @@ func main() {
 		}
 
 		if !res.Ok {
-			preflight.Porcelain.CheckFailed(res)
+			preflight.Porcelain.ReportCheckResult(res)
 			os.Exit(1)
 		}
 
@@ -133,7 +135,7 @@ func main() {
 		}
 
 		if res.HasLookupVulns() {
-			preflight.Porcelain.CheckFailed(res)
+			preflight.Porcelain.ReportCheckResult(res)
 			os.Exit(1)
 		}
 
@@ -152,7 +154,7 @@ func main() {
 		res, err := preflight.Check(string(s), fmt.Sprintf("%v=?", CLI.Create.Digest))
 
 		if res.HasLookupVulns() {
-			preflight.Porcelain.CheckFailed(res)
+			preflight.Porcelain.ReportCheckResult(res)
 			os.Exit(1)
 		}
 

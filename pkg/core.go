@@ -4,7 +4,6 @@ package pkg
 import (
 	//nolint
 	"crypto/md5"
-	"errors"
 	"io"
 	"net/http"
 
@@ -68,20 +67,6 @@ type CheckResult struct {
 	ExpectedDigests []Signature
 	ActualDigest    Digest
 	Ok              bool
-}
-
-func (c *CheckResult) Error() error {
-	if c.Ok {
-		return nil
-	}
-
-	if c.HasLookupVulns() {
-		return fmt.Errorf("vulnerable digest: %v", c.ActualDigest)
-	} else if c.HasValidationVulns() {
-		return fmt.Errorf("digest mismatch: actual: %v, expected: %v", c.ActualDigest, c.ExpectedDigests)
-	} else {
-		return errors.New("unknown result error")
-	}
 }
 
 func (c *CheckResult) HasValidationVulns() bool {
@@ -216,8 +201,8 @@ func (a *Preflight) ExecPiped(script, sig string) error {
 		return err
 	}
 	if !check.Ok {
-		a.Porcelain.CheckFailed(check)
-		return check.Error()
+		a.Porcelain.ReportCheckResult(check)
+		return nil
 	}
 	a.Porcelain.RunOk()
 
@@ -240,8 +225,8 @@ func (a *Preflight) Exec(args []string, sig string) error {
 	}
 
 	if !check.Ok {
-		a.Porcelain.CheckFailed(check)
-		return check.Error()
+		a.Porcelain.ReportCheckResult(check)
+		return nil
 	}
 
 	a.Porcelain.RunOk()
